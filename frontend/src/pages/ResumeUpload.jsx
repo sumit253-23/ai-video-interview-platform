@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ResumeUpload() {
   const navigate = useNavigate();
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+
   const [resumeId, setResumeId] = useState(
-  localStorage.getItem("resume_id")
+    localStorage.getItem("resume_id")
   );
 
   const [analyzing, setAnalyzing] = useState(false);
@@ -43,121 +46,118 @@ function ResumeUpload() {
   };
 
   const handleUpload = async () => {
-  if (!selectedFile) {
-    alert("Please select your resume first.");
-    return;
-  }
-
-  const token = localStorage.getItem("access_token");
-
-  if (!token) {
-    alert("Your session has expired. Please login again.");
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-
-    formData.append("resume", selectedFile);
-
-    const response = await fetch(
-      "http://127.0.0.1:5000/api/resume/upload",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Resume upload failed."
-      );
+    if (!selectedFile) {
+      alert("Please select your resume first.");
+      return;
     }
 
-    localStorage.setItem(
-      "resume_id",
-      String(data.resume.id)
-    );
+    const token = localStorage.getItem("access_token");
 
-    localStorage.setItem(
-      "resume_filename",
-      data.resume.filename
-    ); 
-
-    setResumeId(String(data.resume.id));
-    setAnalysisDone(false);
-
-
-    alert("Resume uploaded successfully.");
-
-    console.log("Resume upload response:", data);
-  } catch (error) {
-    console.error("Resume upload error:", error);
-    alert(error.message);
-  }
-};
-
-const handleAnalyze = async () => {
-  const storedResumeId =
-    resumeId || localStorage.getItem("resume_id");
-
-  if (!storedResumeId) {
-    alert("Please upload your resume first.");
-    return;
-  }
-
-  const token = localStorage.getItem("access_token");
-
-  if (!token) {
-    alert("Your session has expired. Please login again.");
-    navigate("/login");
-    return;
-  }
-
-  try {
-    setAnalyzing(true);
-
-    const response = await fetch(
-      `http://127.0.0.1:5000/api/resume/${storedResumeId}/analyze`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Resume analysis failed."
-      );
+    if (!token) {
+      alert("Your session has expired. Please login again.");
+      navigate("/login");
+      return;
     }
 
-    localStorage.setItem(
-      "resume_analysis",
-      JSON.stringify(data.analysis)
-    );
+    try {
+      const formData = new FormData();
+      formData.append("resume", selectedFile);
 
-    setAnalysisDone(true);
-    navigate("/resume-analysis");
-    
+      const response = await fetch(
+        `${API_URL}/api/resume/upload`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
-    console.log("Resume analysis response:", data);
-  } catch (error) {
-    console.error("Resume analysis error:", error);
-    alert(error.message);
-  } finally {
-    setAnalyzing(false);
-  }
-};
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Resume upload failed."
+        );
+      }
+
+      localStorage.setItem(
+        "resume_id",
+        String(data.resume.id)
+      );
+
+      localStorage.setItem(
+        "resume_filename",
+        data.resume.filename
+      );
+
+      setResumeId(String(data.resume.id));
+      setAnalysisDone(false);
+
+      alert("Resume uploaded successfully.");
+      console.log("Resume upload response:", data);
+    } catch (error) {
+      console.error("Resume upload error:", error);
+      alert(error.message);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    const storedResumeId =
+      resumeId || localStorage.getItem("resume_id");
+
+    if (!storedResumeId) {
+      alert("Please upload your resume first.");
+      return;
+    }
+
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      alert("Your session has expired. Please login again.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setAnalyzing(true);
+
+      const response = await fetch(
+        `${API_URL}/api/resume/${storedResumeId}/analyze`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Resume analysis failed."
+        );
+      }
+
+      localStorage.setItem(
+        "resume_analysis",
+        JSON.stringify(data.analysis)
+      );
+
+      setAnalysisDone(true);
+
+      navigate("/resume-analysis");
+
+      console.log("Resume analysis response:", data);
+    } catch (error) {
+      console.error("Resume analysis error:", error);
+      alert(error.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -165,7 +165,10 @@ const handleAnalyze = async () => {
       <header className="border-b border-slate-800">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <div>
-            <h1 className="text-xl font-bold">AI Interview</h1>
+            <h1 className="text-xl font-bold">
+              AI Interview
+            </h1>
+
             <p className="text-xs text-slate-500">
               Resume Analysis
             </p>
@@ -276,20 +279,21 @@ const handleAnalyze = async () => {
             Upload Resume
           </button>
 
-           {resumeId && (
-  <button
-    type="button"
-    onClick={handleAnalyze}
-    disabled={analyzing}
-    className="mt-3 w-full rounded-xl border border-blue-500/40 bg-blue-500/10 px-5 py-3 font-semibold text-blue-300 transition hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {analyzing
-      ? "Analyzing Resume..."
-      : analysisDone
-      ? "Resume Analyzed ✓"
-      : "Analyze Resume"}
-  </button>
-)}
+          {/* Analyze button */}
+          {resumeId && (
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              className="mt-3 w-full rounded-xl border border-blue-500/40 bg-blue-500/10 px-5 py-3 font-semibold text-blue-300 transition hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {analyzing
+                ? "Analyzing Resume..."
+                : analysisDone
+                ? "Resume Analyzed ✓"
+                : "Analyze Resume"}
+            </button>
+          )}
 
           <p className="mt-4 text-center text-xs text-slate-600">
             Only PDF files are supported.

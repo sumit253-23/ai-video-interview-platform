@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function JobMatch() {
   const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ function JobMatch() {
       setLoading(true);
 
       const response = await fetch(
-        "http://127.0.0.1:5000/api/job-matching/",
+        `${API_URL}/api/job-matching/`,
         {
           method: "POST",
           headers: {

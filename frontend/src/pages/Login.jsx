@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Login() {
   const navigate = useNavigate();
 
@@ -23,7 +25,6 @@ function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     setError("");
 
     if (!formData.email || !formData.password) {
@@ -34,16 +35,13 @@ function Login() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "http://127.0.0.1:5000/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
@@ -58,10 +56,7 @@ function Login() {
 
       // Save user information
       if (data.user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(data.user)
-        );
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
 
       // Go to dashboard after successful login
@@ -78,6 +73,7 @@ function Login() {
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="flex min-h-screen items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
+
           {/* Brand */}
           <div className="mb-8 text-center">
             <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-xl font-bold shadow-lg shadow-blue-600/20">
@@ -95,6 +91,7 @@ function Login() {
 
           {/* Login Card */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl sm:p-8">
+
             <div className="mb-7">
               <h2 className="text-2xl font-semibold">
                 Welcome back
@@ -113,6 +110,7 @@ function Login() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
+
               {/* Email */}
               <div>
                 <label

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Register() {
   const navigate = useNavigate();
 
@@ -42,16 +44,13 @@ function Register() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "http://127.0.0.1:5000/api/auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
@@ -61,7 +60,9 @@ function Register() {
         );
       }
 
-      setSuccess("Account created successfully. Redirecting to login...");
+      setSuccess(
+        "Account created successfully. Redirecting to login..."
+      );
 
       setTimeout(() => {
         navigate("/login");
@@ -194,7 +195,6 @@ function Register() {
               >
                 {loading ? "Creating account..." : "Create Account"}
               </button>
-
             </form>
 
             {/* Login */}
@@ -207,13 +207,11 @@ function Register() {
                 Sign in
               </Link>
             </div>
-
           </div>
 
           <p className="mt-6 text-center text-xs text-slate-600">
             AI-powered interview practice platform
           </p>
-
         </div>
       </div>
     </div>
