@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function VideoInterview() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ function VideoInterview() {
 
     // Create interview
     const response = await fetch(
-      "http://127.0.0.1:5000/api/questions/start",
+  `${API_URL}/api/questions/start`,
       {
 
         method: "POST",
@@ -246,7 +247,7 @@ const uploadIntroductionRecording = async (recordingData) => {
     );
 
     const response = await fetch(
-      "http://127.0.0.1:5000/api/recordings/introduction",
+      `${API_URL}/api/recordings/introduction`,
       {
         method: "POST",
         headers: {
@@ -313,7 +314,7 @@ const uploadAnswerRecording = async (blob, duration) => {
     setLoadingQuestion(true);
 
     const response = await fetch(
-      "http://127.0.0.1:5000/api/recordings/upload",
+  `${API_URL}/api/recordings/upload`,
       {
         method: "POST",
         headers: {
