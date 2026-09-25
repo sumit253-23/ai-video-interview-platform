@@ -24,7 +24,9 @@ function ResumeAnalysis() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <p className="text-slate-400">Loading analysis...</p>
+        <p className="text-slate-400">
+          Loading analysis...
+        </p>
       </div>
     );
   }
@@ -63,14 +65,42 @@ function ResumeAnalysis() {
 
     return (
       <div className="flex flex-wrap gap-2">
-        {items.map((item, index) => (
-          <span
-            key={`${item}-${index}`}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-300"
-          >
-            {item}
-          </span>
-        ))}
+        {items.map((item, index) => {
+          // Handle object items such as:
+          // { name: "...", description: "..." }
+          if (
+            typeof item === "object" &&
+            item !== null
+          ) {
+            return (
+              <div
+                key={`${item.name || "item"}-${index}`}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3"
+              >
+                {item.name && (
+                  <p className="text-sm font-semibold text-slate-200">
+                    {item.name}
+                  </p>
+                )}
+
+                {item.description && (
+                  <p className="mt-1 text-sm leading-6 text-slate-400">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <span
+              key={`${item}-${index}`}
+              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-300"
+            >
+              {String(item)}
+            </span>
+          );
+        })}
       </div>
     );
   };
@@ -126,7 +156,10 @@ function ResumeAnalysis() {
             </div>
 
             <div>
-              <h3 className="font-semibold">Profile Summary</h3>
+              <h3 className="font-semibold">
+                Profile Summary
+              </h3>
+
               <p className="text-xs text-slate-500">
                 AI-generated overview
               </p>
@@ -134,12 +167,15 @@ function ResumeAnalysis() {
           </div>
 
           <p className="text-sm leading-7 text-slate-300">
-            {analysis.summary || "No summary available."}
+            {typeof analysis.summary === "string"
+              ? analysis.summary
+              : "No summary available."}
           </p>
         </section>
 
         {/* Skills */}
         <section className="grid gap-6 lg:grid-cols-2">
+          {/* Skills */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
             <h3 className="mb-4 text-lg font-semibold">
               Skills

@@ -421,65 +421,115 @@ const uploadAnswerRecording = async (blob, duration) => {
   
   useEffect(() => {
   if (!started || !question || loadingQuestion) {
-  return;
-}
-
-  if (!question) {
     return;
   }
 
-  if (!("speechSynthesis" in window)) {
-    console.warn("Speech synthesis is not supported in this browser.");
-    
-    if (streamRef.current && !mediaRecorderRef.current) {
-      startRecording();
+  let audio = null;
+  let cancelled = false;
+
+  const speakQuestion = async () => {
+    try {
+      setAiSpeaking(true);
+
+      console.log("AI TTS request started");
+
+      const response = await fetch(`${API_URL}/api/tts/speak`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: question,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate AI speech");
+      }
+
+      const audioBlob = await response.blob();
+
+      if (cancelled) {
+        return;
+      }
+
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      audio = new Audio(audioUrl);
+
+      audio.volume = 1;
+
+      audio.onplay = () => {
+        console.log("AI TTS started speaking");
+        setAiSpeaking(true);
+      };
+
+      audio.onended = () => {
+        console.log("AI TTS finished speaking");
+
+        setAiSpeaking(false);
+
+        URL.revokeObjectURL(audioUrl);
+
+        if (
+          !cancelled &&
+          streamRef.current &&
+          !mediaRecorderRef.current
+        ) {
+          console.log("Starting user recording...");
+          startRecording();
+        }
+      };
+
+      audio.onerror = (event) => {
+        console.error("AI TTS playback error:", event);
+
+        setAiSpeaking(false);
+
+        URL.revokeObjectURL(audioUrl);
+
+        if (
+          !cancelled &&
+          streamRef.current &&
+          !mediaRecorderRef.current
+        ) {
+          console.log("Starting user recording...");
+          startRecording();
+        }
+      };
+
+      await audio.play();
+
+      console.log("AI TTS audio playing");
+    } catch (error) {
+      console.error("AI TTS ERROR:", error);
+
+      setAiSpeaking(false);
+
+      if (
+        !cancelled &&
+        streamRef.current &&
+        !mediaRecorderRef.current
+      ) {
+        console.log("Starting user recording...");
+        startRecording();
+      }
     }
-
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(question);
-
-utterance.lang = "en-IN";
-utterance.rate = 0.9;
-utterance.pitch = 1;
-utterance.volume = 1;
-
-  utterance.onstart = () => {
-    console.log("AI started speaking");
-    setAiSpeaking(true);
   };
 
-  utterance.onend = () => {
-    console.log("AI finished speaking");
-    setAiSpeaking(false);
-
-    if (streamRef.current && !mediaRecorderRef.current) {
-      console.log("Starting user recording...");
-      startRecording();
-    }
-  };
-
-  utterance.onerror = (event) => {
-    console.error("AI SPEECH ERROR:", event);
-    setAiSpeaking(false);
-
-    if (streamRef.current && !mediaRecorderRef.current) {
-      startRecording();
-    }
-  };
-
-  window.speechSynthesis.speak(utterance);
+  speakQuestion();
 
   return () => {
-    window.speechSynthesis.cancel();
+    cancelled = true;
+
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
     setAiSpeaking(false);
   };
 }, [started, interviewStage, question, loadingQuestion]);
-
-
 
 useEffect(() => {
   const resumeId = localStorage.getItem("resume_id");

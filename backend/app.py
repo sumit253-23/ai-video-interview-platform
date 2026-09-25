@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-
+from routes.tts import tts_bp
 from config import Config
 from extensions import db, jwt
 from routes.auth import auth_bp
@@ -35,6 +35,7 @@ def create_app():
     app.register_blueprint(question_bp)
     app.register_blueprint(recording_bp)
     app.register_blueprint(job_matching_bp)
+    app.register_blueprint(tts_bp)
      
     @app.route("/")
     def home():
